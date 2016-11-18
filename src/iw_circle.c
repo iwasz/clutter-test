@@ -208,6 +208,29 @@ static void iw_circle_paint (ClutterActor *actor)
         //        clutter_actor_paint (priv->child);
 }
 
+// static void iw_circle_paint_node (ClutterActor *actor, ClutterPaintNode *root)
+//{
+//        IwCirclePrivate *priv = IW_CIRCLE (actor)->priv;
+
+//        ClutterPaintNode *node;
+//        ClutterActorBox box;
+
+//        // where the content of the actor should be painted
+//        clutter_actor_get_allocation_box (actor, &box);
+
+//        static const ClutterColor yellow_color = { 0x88, 0x88, 0x00, 0xff };
+//        node = clutter_color_node_new (&yellow_color);
+//        // the cogl_texture variable is set elsewhere
+//        //        node = clutter_texture_node_new (cogl_texture, CLUTTER_COLOR_White, CLUTTER_SCALING_FILTER_TRILINEAR, CLUTTER_SCALING_FILTER_LINEAR);
+
+//        // paint the content of the node using the allocation
+//        clutter_paint_node_add_rectangle (node, &box);
+
+//        // add the node, and transfer ownership
+//        clutter_paint_node_add_child (root, node);
+//        clutter_paint_node_unref (node);
+//}
+
 static void star_actor_pick (ClutterActor *actor, const ClutterColor *pick_color)
 {
         if (!clutter_actor_should_pick_paint (actor)) return;
@@ -264,6 +287,7 @@ static void iw_circle_class_init (IwCircleClass *klass)
         // It still got destroyed even when I do not override the destroy method (like virtual function in C++).
         //        actor_class->allocate = iw_circle_allocate;
         actor_class->paint = iw_circle_paint;
+        //        actor_class->paint_node = iw_circle_paint_node;
         actor_class->pick = star_actor_pick;
 
         g_type_class_add_private (klass, sizeof (IwCirclePrivate));
@@ -297,13 +321,13 @@ static void iw_circle_init (IwCircle *self)
 
         priv = self->priv = IW_CIRCLE_GET_PRIVATE (self);
 
-        clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+        //        clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 
         /* the only child of this actor is a ClutterBox with a
          * ClutterBinLayout: painting and allocation of the actor basically
          * involves painting and allocating this child box
          */
-        layout = clutter_bin_layout_new (CLUTTER_BIN_ALIGNMENT_CENTER, CLUTTER_BIN_ALIGNMENT_CENTER);
+        //        layout = clutter_bin_layout_new (CLUTTER_BIN_ALIGNMENT_CENTER, CLUTTER_BIN_ALIGNMENT_CENTER);
 
         //        priv->child = clutter_actor_new ();
         //        clutter_actor_set_layout_manager (priv->child, layout);
