@@ -91,14 +91,19 @@ int main (int argc, char **argv)
         //        clutter_actor_add_child (stage, button);
 
         /*---------------------------------------------------------------------------*/
+        {
+                ClutterActor *circle = iw_circle_new ();
+                /* note that the size of the button is left to Clutter's size requisition */
+                //        clutter_actor_set_background_color (circle, &yellow_color);
+                clutter_actor_set_size (circle, 100, 100);
+                //        g_signal_connect (circle, "destroy", G_CALLBACK (iw_circle_destroy), NULL);
+                clutter_actor_set_reactive (circle, TRUE);
 
-        ClutterActor *circle = iw_circle_new ();
-        /* note that the size of the button is left to Clutter's size requisition */
-//        clutter_actor_set_background_color (circle, &yellow_color);
-        clutter_actor_set_size (circle, 100, 100);
-        //        g_signal_connect (circle, "destroy", G_CALLBACK (iw_circle_destroy), NULL);
-        clutter_actor_add_child (stage, circle);
+                clutter_actor_add_child (stage, circle);
 
+                ClutterAction *dragAction = clutter_drag_action_new ();
+                clutter_actor_add_action (circle, dragAction);
+        }
         /*---------------------------------------------------------------------------*/
 
         clutter_actor_show (stage);
