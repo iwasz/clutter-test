@@ -35,10 +35,10 @@ G_DEFINE_TYPE (IwCircle, iw_circle, CLUTTER_TYPE_ACTOR);
  * (toggled on or off) or a background image
  */
 struct _IwCirclePrivate {
-//        ClutterActor *child;
-//        ClutterActor *label;
-//        ClutterAction *click_action;
-//        gchar *text;
+        //        ClutterActor *child;
+        //        ClutterActor *label;
+        //        ClutterAction *click_action;
+        //        gchar *text;
         gchar dummy;
 };
 
@@ -70,9 +70,9 @@ static guint iw_circle_signals[LAST_SIGNAL] = {
  */
 static void iw_circle_finalize (GObject *gobject)
 {
-//        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
+        //        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
 
-//        g_free (priv->text);
+        //        g_free (priv->text);
 
         /* call the parent class' finalize() method */
         G_OBJECT_CLASS (iw_circle_parent_class)->finalize (gobject);
@@ -87,9 +87,9 @@ static void iw_circle_set_property (GObject *gobject, guint prop_id, const GValu
         IwCircle *button = IW_CIRCLE (gobject);
 
         switch (prop_id) {
-//        case PROP_TEXT:
-//                iw_circle_set_text (button, g_value_get_string (value));
-//                break;
+        //        case PROP_TEXT:
+        //                iw_circle_set_text (button, g_value_get_string (value));
+        //                break;
 
         default:
                 G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -103,9 +103,9 @@ static void iw_circle_get_property (GObject *gobject, guint prop_id, GValue *val
         IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
 
         switch (prop_id) {
-//        case PROP_TEXT:
-//                g_value_set_string (value, priv->text);
-//                break;
+        //        case PROP_TEXT:
+        //                g_value_set_string (value, priv->text);
+        //                break;
 
         default:
                 G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -123,7 +123,7 @@ static void iw_circle_get_property (GObject *gobject, guint prop_id, GValue *val
  * implementation destroy any actors they are composed from;
  * in this case, we just destroy the child ClutterBox
  */
-//static void iw_circle_destroy (ClutterActor *self)
+// static void iw_circle_destroy (ClutterActor *self)
 //{
 //        IwCirclePrivate *priv = IW_CIRCLE (self)->priv;
 
@@ -146,28 +146,28 @@ static void iw_circle_get_property (GObject *gobject, guint prop_id, GValue *val
 /* use the actor's allocation for the ClutterBox */
 static void iw_circle_allocate (ClutterActor *actor, const ClutterActorBox *box, ClutterAllocationFlags flags)
 {
-//        IwCirclePrivate *priv = IW_CIRCLE (actor)->priv;
-//        ClutterActorBox child_box = {
-//                0,
-//        };
+        //        IwCirclePrivate *priv = IW_CIRCLE (actor)->priv;
+        //        ClutterActorBox child_box = {
+        //                0,
+        //        };
 
-//        /* set the allocation for the whole button */
-//        CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->allocate (actor, box, flags);
+        //        /* set the allocation for the whole button */
+        //        CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->allocate (actor, box, flags);
 
-//        /* make the child (the ClutterBox) fill the parent;
-//         * note that this allocation box is relative to the
-//         * coordinates of the whole button actor, so we can't just
-//         * use the box passed into this function; instead, it
-//         * is adjusted to span the whole of the actor, from its
-//         * top-left corner (0,0) to its bottom-right corner
-//         * (width,height)
-//         */
-//        child_box.x1 = 0.0;
-//        child_box.y1 = 0.0;
-//        child_box.x2 = clutter_actor_box_get_width (box);
-//        child_box.y2 = clutter_actor_box_get_height (box);
+        //        /* make the child (the ClutterBox) fill the parent;
+        //         * note that this allocation box is relative to the
+        //         * coordinates of the whole button actor, so we can't just
+        //         * use the box passed into this function; instead, it
+        //         * is adjusted to span the whole of the actor, from its
+        //         * top-left corner (0,0) to its bottom-right corner
+        //         * (width,height)
+        //         */
+        //        child_box.x1 = 0.0;
+        //        child_box.y1 = 0.0;
+        //        child_box.x2 = clutter_actor_box_get_width (box);
+        //        child_box.y2 = clutter_actor_box_get_height (box);
 
-//        clutter_actor_allocate (priv->child, &child_box, flags);
+        //        clutter_actor_allocate (priv->child, &child_box, flags);
 }
 
 /* paint function implementation: just calls paint() on the ClutterBox */
@@ -208,6 +208,34 @@ static void iw_circle_paint (ClutterActor *actor)
         //        clutter_actor_paint (priv->child);
 }
 
+static void star_actor_pick (ClutterActor *actor, const ClutterColor *pick_color)
+{
+        if (!clutter_actor_should_pick_paint (actor)) return;
+
+        ClutterActorBox allocation = {
+                0,
+        };
+        gfloat width, height;
+
+        clutter_actor_get_allocation_box (actor, &allocation);
+        clutter_actor_box_get_size (&allocation, &width, &height);
+
+        cogl_path_new ();
+
+        cogl_set_source_color4ub (pick_color->red, pick_color->green, pick_color->blue, pick_color->alpha);
+
+        /* create and store a path describing a star */
+        cogl_path_move_to (width * 0.5, 0);
+        cogl_path_line_to (width, height * 0.75);
+        cogl_path_line_to (0, height * 0.75);
+        cogl_path_move_to (width * 0.5, height);
+        cogl_path_line_to (0, height * 0.25);
+        cogl_path_line_to (width, height * 0.25);
+        cogl_path_line_to (width * 0.5, height);
+
+        cogl_path_fill ();
+}
+
 /* proxy ClickAction signals so they become signals from the actor */
 static void iw_circle_clicked (ClutterClickAction *action, ClutterActor *actor, gpointer user_data)
 {
@@ -234,8 +262,9 @@ static void iw_circle_class_init (IwCircleClass *klass)
         gobject_class->get_property = iw_circle_get_property;
 
         // It still got destroyed even when I do not override the destroy method (like virtual function in C++).
-//        actor_class->allocate = iw_circle_allocate;
+        //        actor_class->allocate = iw_circle_allocate;
         actor_class->paint = iw_circle_paint;
+        actor_class->pick = star_actor_pick;
 
         g_type_class_add_private (klass, sizeof (IwCirclePrivate));
 
@@ -276,26 +305,26 @@ static void iw_circle_init (IwCircle *self)
          */
         layout = clutter_bin_layout_new (CLUTTER_BIN_ALIGNMENT_CENTER, CLUTTER_BIN_ALIGNMENT_CENTER);
 
-//        priv->child = clutter_actor_new ();
-//        clutter_actor_set_layout_manager (priv->child, layout);
+        //        priv->child = clutter_actor_new ();
+        //        clutter_actor_set_layout_manager (priv->child, layout);
 
-//        /* set the parent of the ClutterBox to this instance */
-//        clutter_actor_add_child (CLUTTER_ACTOR (self), priv->child);
+        //        /* set the parent of the ClutterBox to this instance */
+        //        clutter_actor_add_child (CLUTTER_ACTOR (self), priv->child);
 
-//        /* add text label to the button; see the ClutterText API docs
-//         * for more information about available properties
-//         */
-//        priv->label = g_object_new (CLUTTER_TYPE_TEXT, "line-alignment", PANGO_ALIGN_CENTER, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+        //        /* add text label to the button; see the ClutterText API docs
+        //         * for more information about available properties
+        //         */
+        //        priv->label = g_object_new (CLUTTER_TYPE_TEXT, "line-alignment", PANGO_ALIGN_CENTER, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
 
-//        clutter_actor_add_child (priv->child, priv->label);
+        //        clutter_actor_add_child (priv->child, priv->label);
 
-//        /* add a ClutterClickAction on this actor, so we can proxy its
-//         * "clicked" signal into a signal from this actor
-//         */
-//        priv->click_action = clutter_click_action_new ();
-//        clutter_actor_add_action (CLUTTER_ACTOR (self), priv->click_action);
+        //        /* add a ClutterClickAction on this actor, so we can proxy its
+        //         * "clicked" signal into a signal from this actor
+        //         */
+        //        priv->click_action = clutter_click_action_new ();
+        //        clutter_actor_add_action (CLUTTER_ACTOR (self), priv->click_action);
 
-//        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circle_clicked), NULL);
+        //        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circle_clicked), NULL);
 }
 
 /* public API */
@@ -312,25 +341,25 @@ static void iw_circle_init (IwCircle *self)
  */
 void iw_circle_set_text (IwCircle *self, const gchar *text)
 {
-//        IwCirclePrivate *priv;
+        //        IwCirclePrivate *priv;
 
-//        /* public API should check its arguments;
-//         * see also g_return_val_if_fail for functions which
-//         * return a value
-//         */
-//        g_return_if_fail (IW_IS_CIRCLE (self));
+        //        /* public API should check its arguments;
+        //         * see also g_return_val_if_fail for functions which
+        //         * return a value
+        //         */
+        //        g_return_if_fail (IW_IS_CIRCLE (self));
 
-//        priv = self->priv;
+        //        priv = self->priv;
 
-//        g_free (priv->text);
+        //        g_free (priv->text);
 
-//        if (text)
-//                priv->text = g_strdup (text);
-//        else
-//                priv->text = g_strdup ("");
+        //        if (text)
+        //                priv->text = g_strdup (text);
+        //        else
+        //                priv->text = g_strdup ("");
 
-//        /* call a function on the ClutterText inside the layout */
-//        clutter_text_set_text (CLUTTER_TEXT (priv->label), priv->text);
+        //        /* call a function on the ClutterText inside the layout */
+        //        clutter_text_set_text (CLUTTER_TEXT (priv->label), priv->text);
 }
 
 /**
@@ -340,7 +369,7 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
  *
  * Set the color of the button's background
  */
-//void iw_circle_set_background_color (IwCircle *self, const ClutterColor *color)
+// void iw_circle_set_background_color (IwCircle *self, const ClutterColor *color)
 //{
 //        g_return_if_fail (IW_IS_CIRCLE (self));
 
@@ -354,7 +383,7 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
 // *
 // * Set the color of the text on the button
 // */
-//void iw_circle_set_text_color (IwCircle *self, const ClutterColor *color)
+// void iw_circle_set_text_color (IwCircle *self, const ClutterColor *color)
 //{
 //        g_return_if_fail (IW_IS_CIRCLE (self));
 
@@ -369,7 +398,7 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
 // *
 // * Returns: the button's text. This must not be freed by the application.
 // */
-//const gchar *iw_circle_get_text (IwCircle *self)
+// const gchar *iw_circle_get_text (IwCircle *self)
 //{
 //        g_return_val_if_fail (IW_IS_CIRCLE (self), NULL);
 
