@@ -96,6 +96,7 @@ int main (int argc, char **argv)
         /* note that the size of the button is left to Clutter's size requisition */
         iw_circle_set_text_color (IW_CIRCLE (circle), &white_color);
         iw_circle_set_background_color (IW_CIRCLE (circle), &yellow_color);
+        clutter_actor_set_size (circle, 100, 100);
         clutter_actor_add_child (stage, circle);
 
         /*---------------------------------------------------------------------------*/

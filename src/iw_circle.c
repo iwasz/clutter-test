@@ -142,36 +142,6 @@ static void iw_circle_destroy (ClutterActor *self)
         if (CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->destroy) CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->destroy (self);
 }
 
-/* get_preferred_height and get_preferred_width defer to the
- * internal ClutterBox, adding 20px padding on each axis;
- * min_*_p is the minimum height or width the actor should occupy
- * to be useful; natural_*_p is the height or width the actor
- * would occupy if not constrained
- *
- * note that if we required explicit sizing for IwCircles
- * (i.e. a developer must set their height and width),
- * we wouldn't need to implement these functions
- */
-static void iw_circle_get_preferred_height (ClutterActor *self, gfloat for_width, gfloat *min_height_p, gfloat *natural_height_p)
-{
-        IwCirclePrivate *priv = IW_CIRCLE (self)->priv;
-
-        clutter_actor_get_preferred_height (priv->child, for_width, min_height_p, natural_height_p);
-
-        *min_height_p += 20.0;
-        *natural_height_p += 20.0;
-}
-
-static void iw_circle_get_preferred_width (ClutterActor *self, gfloat for_height, gfloat *min_width_p, gfloat *natural_width_p)
-{
-        IwCirclePrivate *priv = IW_CIRCLE (self)->priv;
-
-        clutter_actor_get_preferred_width (priv->child, for_height, min_width_p, natural_width_p);
-
-        *min_width_p += 20.0;
-        *natural_width_p += 20.0;
-}
-
 /* use the actor's allocation for the ClutterBox */
 static void iw_circle_allocate (ClutterActor *actor, const ClutterActorBox *box, ClutterAllocationFlags flags)
 {
@@ -263,8 +233,6 @@ static void iw_circle_class_init (IwCircleClass *klass)
         gobject_class->get_property = iw_circle_get_property;
 
         actor_class->destroy = iw_circle_destroy;
-        actor_class->get_preferred_height = iw_circle_get_preferred_height;
-        actor_class->get_preferred_width = iw_circle_get_preferred_width;
         actor_class->allocate = iw_circle_allocate;
         actor_class->paint = iw_circle_paint;
 
