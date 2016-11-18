@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#cmake -DCMAKE_BUILD_TYPE='Debug' -DCMAKE_INSTALL_PREFIX:PATH=$HOME/local -DBOOST_ROOT="/home/iwasz/local" ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-3.9 -DCMAKE_CXX_COMPILER=clang++-3.9 ..
