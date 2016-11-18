@@ -6,6 +6,7 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
+#include <math.h>
 #include "iw_circle.h"
 
 /**
@@ -35,11 +36,8 @@ G_DEFINE_TYPE (IwCircle, iw_circle, CLUTTER_TYPE_ACTOR);
  * (toggled on or off) or a background image
  */
 struct _IwCirclePrivate {
-        //        ClutterActor *child;
-        //        ClutterActor *label;
-        //        ClutterAction *click_action;
-        //        gchar *text;
-        gchar dummy;
+        ClutterColor *color;
+        ClutterContent *canvas;
 };
 
 /* enumerates property identifiers for this class;
@@ -59,7 +57,7 @@ static guint iw_circle_signals[LAST_SIGNAL] = {
         0,
 };
 
-static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height);
+static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height, gpointer *data);
 static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocation, ClutterAllocationFlags flags, gpointer user_data);
 static gboolean idle_resize (gpointer data);
 
@@ -74,9 +72,9 @@ static gboolean idle_resize (gpointer data);
  */
 static void iw_circle_finalize (GObject *gobject)
 {
-        //        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
 
-        //        g_free (priv->text);
+        clutter_color_free (priv->color);
 
         /* call the parent class' finalize() method */
         G_OBJECT_CLASS (iw_circle_parent_class)->finalize (gobject);
@@ -354,18 +352,18 @@ static void iw_circle_init (IwCircle *self)
         //        clutter_actor_add_action (CLUTTER_ACTOR (self), priv->click_action);
 
         //        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circle_clicked), NULL);
+        priv->color = clutter_color_new (0, 0, 0, 255);
 
-        ClutterContent *canvas;
-        canvas = clutter_canvas_new ();
-        clutter_canvas_set_size (CLUTTER_CANVAS (canvas), 300, 300);
-        clutter_actor_set_content (CLUTTER_ACTOR (self), canvas);
+        priv->canvas = clutter_canvas_new ();
+        clutter_canvas_set_size (CLUTTER_CANVAS (priv->canvas), 300, 300);
+        clutter_actor_set_content (CLUTTER_ACTOR (self), priv->canvas);
         clutter_actor_set_content_scaling_filters (CLUTTER_ACTOR (self), CLUTTER_SCALING_FILTER_TRILINEAR, CLUTTER_SCALING_FILTER_LINEAR);
-        g_object_unref (canvas);
+        g_object_unref (priv->canvas);
 
         /* connect our drawing code */
-        g_signal_connect (canvas, "draw", G_CALLBACK (draw_circle), NULL);
+        g_signal_connect (priv->canvas, "draw", G_CALLBACK (draw_circle), priv);
         /* invalidate the canvas, so that we can draw before the main loop starts */
-        clutter_content_invalidate (canvas);
+        clutter_content_invalidate (priv->canvas);
 
         g_signal_connect (CLUTTER_ACTOR (self), "allocation-changed", G_CALLBACK (on_actor_resize), NULL);
 }
@@ -412,12 +410,18 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
  *
  * Set the color of the button's background
  */
-// void iw_circle_set_background_color (IwCircle *self, const ClutterColor *color)
-//{
-//        g_return_if_fail (IW_IS_CIRCLE (self));
+void iw_circle_set_color (IwCircle *self, const ClutterColor *color)
+{
+        g_return_if_fail (IW_IS_CIRCLE (self));
 
-//        clutter_actor_set_background_color (self->priv->child, color);
-//}
+        // clutter_actor_set_background_color (self->priv->child, color);
+        self->priv->color->alpha = color->alpha;
+        self->priv->color->red = color->red;
+        self->priv->color->green = color->green;
+        self->priv->color->blue = color->blue;
+
+        clutter_content_invalidate (self->priv->canvas);
+}
 
 ///**
 // * iw_circle_set_text_color:
@@ -457,8 +461,10 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
  */
 ClutterActor *iw_circle_new (void) { return g_object_new (IW_TYPE_CIRCLE, NULL); }
 
-static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height)
+static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height, gpointer *data)
 {
+        IwCirclePrivate *priv = (IwCirclePrivate *)data;
+
         cairo_save (cr);
 
         /* clear the contents of the canvas, to avoid painting
@@ -478,7 +484,7 @@ static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int 
         cairo_set_line_width (cr, 0);
 
         /* the black rail that holds the seconds indicator */
-        clutter_cairo_set_source_color (cr, CLUTTER_COLOR_Black);
+        clutter_cairo_set_source_color (cr, priv->color);
         cairo_translate (cr, 0.5, 0.5);
         cairo_arc (cr, 0, 0, 0.5, 0, G_PI * 2);
         cairo_fill (cr);

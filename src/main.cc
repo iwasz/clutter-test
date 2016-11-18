@@ -97,6 +97,8 @@ int main (int argc, char **argv)
                 /* note that the size of the button is left to Clutter's size requisition */
                 //        clutter_actor_set_background_color (circle, &yellow_color);
                 clutter_actor_set_size (circle, 100, 100);
+                ClutterColor actor_color = { 0, 150, 198, 201 };
+                iw_circle_set_color (IW_CIRCLE (circle), &actor_color);
                 //        g_signal_connect (circle, "destroy", G_CALLBACK (iw_circle_destroy), NULL);
                 clutter_actor_set_reactive (circle, TRUE);
 

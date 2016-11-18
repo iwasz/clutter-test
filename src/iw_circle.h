@@ -75,6 +75,7 @@ struct _IwCircleClass {
 
 /* constructor - note this returns a ClutterActor instance */
 ClutterActor *iw_circle_new (void);
+void iw_circle_set_color (IwCircle *self, const ClutterColor *color);
 
 /* getter */
 //const gchar *iw_circle_get_text (IwCircle *self);
