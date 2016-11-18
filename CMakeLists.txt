@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.8.0 FATAL_ERROR)
 PROJECT (clutter-test)
 #SET (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 INCLUDE (../tiliae/tiliae.cmake)
-SET (CMAKE_VERBOSE_MAKEFILE ON)
+SET (CMAKE_VERBOSE_MAKEFILE OFF)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -64,7 +64,11 @@ link_directories(${CLUTTER_GTK_LIBRARY_DIRS})
 # | Main target                   |
 # +-------------------------------+
 
-SET (SOURCES "src/main.cc")
+SET (SOURCES
+        "src/main.cc"
+        "src/cb_button.h"
+        "src/cb_button.c"
+)
 
 # Local includes (inside project).
 INCLUDE_DIRECTORIES (src)
