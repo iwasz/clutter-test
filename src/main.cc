@@ -19,6 +19,7 @@ static const ClutterColor yellow_color = { 0x88, 0x88, 0x00, 0xff };
 void on_stage_button_press (ClutterStage *stage, ClutterEvent *event, gpointer data);
 void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_data);
 void on_paint (ClutterActor *actor, gpointer user_data);
+void iw_circle_destroy (ClutterActor *actor, gpointer user_data);
 
 /*****************************************************************************/
 
@@ -82,21 +83,20 @@ int main (int argc, char **argv)
 
         /*---------------------------------------------------------------------------*/
 
-//        ClutterActor *button = cb_button_new ();
-//        cb_button_set_text (CB_BUTTON (button), "hello");
-//        /* note that the size of the button is left to Clutter's size requisition */
-//        cb_button_set_text_color (CB_BUTTON (button), &white_color);
-//        cb_button_set_background_color (CB_BUTTON (button), &yellow_color);
-//        clutter_actor_add_child (stage, button);
+        //        ClutterActor *button = cb_button_new ();
+        //        cb_button_set_text (CB_BUTTON (button), "hello");
+        //        /* note that the size of the button is left to Clutter's size requisition */
+        //        cb_button_set_text_color (CB_BUTTON (button), &white_color);
+        //        cb_button_set_background_color (CB_BUTTON (button), &yellow_color);
+        //        clutter_actor_add_child (stage, button);
 
         /*---------------------------------------------------------------------------*/
 
         ClutterActor *circle = iw_circle_new ();
-        iw_circle_set_text (IW_CIRCLE (circle), "hello");
         /* note that the size of the button is left to Clutter's size requisition */
-        iw_circle_set_text_color (IW_CIRCLE (circle), &white_color);
-        iw_circle_set_background_color (IW_CIRCLE (circle), &yellow_color);
+//        clutter_actor_set_background_color (circle, &yellow_color);
         clutter_actor_set_size (circle, 100, 100);
+        //        g_signal_connect (circle, "destroy", G_CALLBACK (iw_circle_destroy), NULL);
         clutter_actor_add_child (stage, circle);
 
         /*---------------------------------------------------------------------------*/
@@ -133,3 +133,4 @@ void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_
         std::cerr << "Button " << clutter_click_action_get_button (action) << " clicked" << std::endl;
 }
 
+void iw_circle_destroy (ClutterActor *actor, gpointer user_data) { std::cerr << "CircleDestroyed" << std::endl; }

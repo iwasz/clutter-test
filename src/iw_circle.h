@@ -77,16 +77,16 @@ struct _IwCircleClass {
 ClutterActor *iw_circle_new (void);
 
 /* getter */
-const gchar *iw_circle_get_text (IwCircle *self);
+//const gchar *iw_circle_get_text (IwCircle *self);
 
-/* setters - these are wrappers round functions
- * which change properties of the internal actors
- */
-void iw_circle_set_text (IwCircle *self, const gchar *text);
+///* setters - these are wrappers round functions
+// * which change properties of the internal actors
+// */
+//void iw_circle_set_text (IwCircle *self, const gchar *text);
 
-void iw_circle_set_background_color (IwCircle *self, const ClutterColor *color);
+//void iw_circle_set_background_color (IwCircle *self, const ClutterColor *color);
 
-void iw_circle_set_text_color (IwCircle *self, const ClutterColor *color);
+//void iw_circle_set_text_color (IwCircle *self, const ClutterColor *color);
 
 #ifdef __cplusplus
 }
