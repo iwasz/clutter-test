@@ -21,7 +21,6 @@ void on_stage_button_press (ClutterStage *stage, ClutterEvent *event, gpointer d
 void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_data);
 void on_paint (ClutterActor *actor, gpointer user_data);
 void iw_circle_destroy (ClutterActor *actor, gpointer user_data);
-static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height);
 
 /*****************************************************************************/
 
@@ -63,24 +62,13 @@ int main (int argc, char **argv)
         /*---------------------------------------------------------------------------*/
 
         {
-                //                ClutterColor actor_color = { 0, 0, 255, 128 };
+                ClutterColor actor_color = { 0, 0, 255, 128 };
                 ClutterActor *rect = clutter_actor_new ();
-                //                clutter_actor_set_background_color (rect, &actor_color);
-                                clutter_actor_set_size (rect, 100, 100);
-                //                clutter_actor_set_position (rect, 300, 300);
+                clutter_actor_set_background_color (rect, &actor_color);
+                clutter_actor_set_size (rect, 100, 100);
+                clutter_actor_set_position (rect, 300, 300);
                 clutter_actor_set_reactive (rect, TRUE);
-
-                ClutterContent *canvas;
-                canvas = clutter_canvas_new ();
-                clutter_canvas_set_size (CLUTTER_CANVAS (canvas), 300, 300);
-                clutter_actor_set_content (rect, canvas);
-                clutter_actor_set_content_scaling_filters (rect, CLUTTER_SCALING_FILTER_TRILINEAR, CLUTTER_SCALING_FILTER_LINEAR);
                 clutter_actor_add_child (CLUTTER_ACTOR (stage), rect);
-                g_object_unref (canvas);
-                /* connect our drawing code */
-                g_signal_connect (canvas, "draw", G_CALLBACK (draw_circle), NULL);
-                /* invalidate the canvas, so that we can draw before the main loop starts */
-                clutter_content_invalidate (canvas);
 
                 //        ClutterAction *clickAction = clutter_click_action_new ();
                 //        clutter_actor_add_action (rect, clickAction);
@@ -152,33 +140,3 @@ void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_
 }
 
 void iw_circle_destroy (ClutterActor *actor, gpointer user_data) { std::cerr << "CircleDestroyed" << std::endl; }
-
-static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height)
-{
-        cairo_save (cr);
-
-        /* clear the contents of the canvas, to avoid painting
-         * over the previous frame
-         */
-        cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
-        cairo_paint (cr);
-
-        cairo_restore (cr);
-
-        cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
-
-        /* scale the modelview to the size of the surface */
-        cairo_scale (cr, width, height);
-
-        cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
-        cairo_set_line_width (cr, 0.1);
-
-        /* the black rail that holds the seconds indicator */
-        clutter_cairo_set_source_color (cr, CLUTTER_COLOR_Black);
-        cairo_translate (cr, 0.5, 0.5);
-        cairo_arc (cr, 0, 0, 0.4, 0, G_PI * 2);
-        cairo_stroke (cr);
-
-        /* we're done drawing */
-        return TRUE;
-}

@@ -59,6 +59,8 @@ static guint iw_circle_signals[LAST_SIGNAL] = {
         0,
 };
 
+static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height);
+
 /* from http://mail.gnome.org/archives/gtk-devel-list/2004-July/msg00158.html:
  *
  * "The finalize method finishes releasing the remaining
@@ -286,7 +288,7 @@ static void iw_circle_class_init (IwCircleClass *klass)
 
         // It still got destroyed even when I do not override the destroy method (like virtual function in C++).
         //        actor_class->allocate = iw_circle_allocate;
-        actor_class->paint = iw_circle_paint;
+//        actor_class->paint = iw_circle_paint;
         //        actor_class->paint_node = iw_circle_paint_node;
         actor_class->pick = star_actor_pick;
 
@@ -349,6 +351,21 @@ static void iw_circle_init (IwCircle *self)
         //        clutter_actor_add_action (CLUTTER_ACTOR (self), priv->click_action);
 
         //        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circle_clicked), NULL);
+
+        ClutterContent *canvas;
+        canvas = clutter_canvas_new ();
+        clutter_canvas_set_size (CLUTTER_CANVAS (canvas), 300, 300);
+        clutter_actor_set_content (CLUTTER_ACTOR (self), canvas);
+        clutter_actor_set_content_scaling_filters (CLUTTER_ACTOR (self), CLUTTER_SCALING_FILTER_TRILINEAR, CLUTTER_SCALING_FILTER_LINEAR);
+        g_object_unref (canvas);
+
+        /* connect our drawing code */
+        g_signal_connect (canvas, "draw", G_CALLBACK (draw_circle), NULL);
+        /* invalidate the canvas, so that we can draw before the main loop starts */
+        clutter_content_invalidate (canvas);
+
+//        g_signal_connect (CLUTTER_ACTOR (self), "allocation-changed", G_CALLBACK (on_actor_resize), NULL);
+
 }
 
 /* public API */
@@ -437,3 +454,34 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
  * Returns: a new #IwCircle
  */
 ClutterActor *iw_circle_new (void) { return g_object_new (IW_TYPE_CIRCLE, NULL); }
+
+
+static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height)
+{
+        cairo_save (cr);
+
+        /* clear the contents of the canvas, to avoid painting
+         * over the previous frame
+         */
+        cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
+        cairo_paint (cr);
+
+        cairo_restore (cr);
+
+        cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
+
+        /* scale the modelview to the size of the surface */
+        cairo_scale (cr, width, height);
+
+        cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
+        cairo_set_line_width (cr, 0.1);
+
+        /* the black rail that holds the seconds indicator */
+        clutter_cairo_set_source_color (cr, CLUTTER_COLOR_Black);
+        cairo_translate (cr, 0.5, 0.5);
+        cairo_arc (cr, 0, 0, 0.4, 0, G_PI * 2);
+        cairo_stroke (cr);
+
+        /* we're done drawing */
+        return TRUE;
+}
