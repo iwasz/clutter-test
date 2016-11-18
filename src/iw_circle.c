@@ -60,6 +60,8 @@ static guint iw_circle_signals[LAST_SIGNAL] = {
 };
 
 static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height);
+static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocation, ClutterAllocationFlags flags, gpointer user_data);
+static gboolean idle_resize (gpointer data);
 
 /* from http://mail.gnome.org/archives/gtk-devel-list/2004-July/msg00158.html:
  *
@@ -193,18 +195,19 @@ static void iw_circle_paint (ClutterActor *actor)
 
         cogl_path_new ();
 
-        //        cogl_set_source_color4ub (color.red, color.green, color.blue, tmp_alpha);
-        cogl_set_source_color4ub (0, 0, 255, 128);
+        //        //        cogl_set_source_color4ub (color.red, color.green, color.blue, tmp_alpha);
+        //        cogl_set_source_color4ub (0, 0, 255, 128);
 
-        /* create and store a path describing a star */
-        cogl_path_move_to (width * 0.5, 0);
-        cogl_path_line_to (width, height * 0.75);
-        cogl_path_line_to (0, height * 0.75);
-        cogl_path_move_to (width * 0.5, height);
-        cogl_path_line_to (0, height * 0.25);
-        cogl_path_line_to (width, height * 0.25);
-        cogl_path_line_to (width * 0.5, height);
+        //        /* create and store a path describing a star */
+        //        cogl_path_move_to (width * 0.5, 0);
+        //        cogl_path_line_to (width, height * 0.75);
+        //        cogl_path_line_to (0, height * 0.75);
+        //        cogl_path_move_to (width * 0.5, height);
+        //        cogl_path_line_to (0, height * 0.25);
+        //        cogl_path_line_to (width, height * 0.25);
+        //        cogl_path_line_to (width * 0.5, height);
 
+        cogl_path_ellipse (width / 2.0, height / 2.0, width / 2.0, height / 2.0);
         cogl_path_fill ();
 
         //        clutter_actor_paint (priv->child);
@@ -250,14 +253,14 @@ static void star_actor_pick (ClutterActor *actor, const ClutterColor *pick_color
         cogl_set_source_color4ub (pick_color->red, pick_color->green, pick_color->blue, pick_color->alpha);
 
         /* create and store a path describing a star */
-        cogl_path_move_to (width * 0.5, 0);
-        cogl_path_line_to (width, height * 0.75);
-        cogl_path_line_to (0, height * 0.75);
-        cogl_path_move_to (width * 0.5, height);
-        cogl_path_line_to (0, height * 0.25);
-        cogl_path_line_to (width, height * 0.25);
-        cogl_path_line_to (width * 0.5, height);
-
+        //        cogl_path_move_to (width * 0.5, 0);
+        //        cogl_path_line_to (width, height * 0.75);
+        //        cogl_path_line_to (0, height * 0.75);
+        //        cogl_path_move_to (width * 0.5, height);
+        //        cogl_path_line_to (0, height * 0.25);
+        //        cogl_path_line_to (width, height * 0.25);
+        //        cogl_path_line_to (width * 0.5, height);
+        cogl_path_ellipse (width / 2.0, height / 2.0, width / 2.0, height / 2.0);
         cogl_path_fill ();
 }
 
@@ -288,7 +291,7 @@ static void iw_circle_class_init (IwCircleClass *klass)
 
         // It still got destroyed even when I do not override the destroy method (like virtual function in C++).
         //        actor_class->allocate = iw_circle_allocate;
-//        actor_class->paint = iw_circle_paint;
+        //        actor_class->paint = iw_circle_paint;
         //        actor_class->paint_node = iw_circle_paint_node;
         actor_class->pick = star_actor_pick;
 
@@ -364,8 +367,7 @@ static void iw_circle_init (IwCircle *self)
         /* invalidate the canvas, so that we can draw before the main loop starts */
         clutter_content_invalidate (canvas);
 
-//        g_signal_connect (CLUTTER_ACTOR (self), "allocation-changed", G_CALLBACK (on_actor_resize), NULL);
-
+        g_signal_connect (CLUTTER_ACTOR (self), "allocation-changed", G_CALLBACK (on_actor_resize), NULL);
 }
 
 /* public API */
@@ -455,7 +457,6 @@ void iw_circle_set_text (IwCircle *self, const gchar *text)
  */
 ClutterActor *iw_circle_new (void) { return g_object_new (IW_TYPE_CIRCLE, NULL); }
 
-
 static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height)
 {
         cairo_save (cr);
@@ -474,14 +475,42 @@ static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int 
         cairo_scale (cr, width, height);
 
         cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
-        cairo_set_line_width (cr, 0.1);
+        cairo_set_line_width (cr, 0);
 
         /* the black rail that holds the seconds indicator */
         clutter_cairo_set_source_color (cr, CLUTTER_COLOR_Black);
         cairo_translate (cr, 0.5, 0.5);
-        cairo_arc (cr, 0, 0, 0.4, 0, G_PI * 2);
-        cairo_stroke (cr);
+        cairo_arc (cr, 0, 0, 0.5, 0, G_PI * 2);
+        cairo_fill (cr);
 
         /* we're done drawing */
         return TRUE;
+}
+
+static guint idle_resize_id;
+
+static gboolean idle_resize (gpointer data)
+{
+        ClutterActor *actor = data;
+        float width, height;
+
+        /* match the canvas size to the actor's */
+        clutter_actor_get_size (actor, &width, &height);
+        clutter_canvas_set_size (CLUTTER_CANVAS (clutter_actor_get_content (actor)), ceilf (width), ceilf (height));
+
+        /* unset the guard */
+        idle_resize_id = 0;
+
+        /* remove the timeout */
+        return G_SOURCE_REMOVE;
+}
+
+static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocation, ClutterAllocationFlags flags, gpointer user_data)
+{
+        /* throttle multiple actor allocations to one canvas resize; we use a guard
+         * variable to avoid queueing multiple resize operations
+         */
+        if (idle_resize_id == 0) {
+                idle_resize_id = clutter_threads_add_timeout (1000, idle_resize, actor);
+        }
 }
