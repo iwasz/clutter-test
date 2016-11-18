@@ -106,8 +106,8 @@ static void iw_circle_class_init (IwCircleClass *klass)
         GParamSpec *pspec;
 
         gobject_class->finalize = iw_circle_finalize;
-//        gobject_class->set_property = iw_circle_set_property;
-//        gobject_class->get_property = iw_circle_get_property;
+        //        gobject_class->set_property = iw_circle_set_property;
+        //        gobject_class->get_property = iw_circle_get_property;
 
         // It still got destroyed even when I do not override the destroy method (like virtual function in C++).
         //        actor_class->allocate = iw_circle_allocate;
@@ -159,7 +159,7 @@ static void iw_circle_init (IwCircle *self)
         priv->color = clutter_color_new (0, 0, 0, 255);
 
         priv->canvas = clutter_canvas_new ();
-        clutter_canvas_set_size (CLUTTER_CANVAS (priv->canvas), 300, 300);
+        //        clutter_canvas_set_size (CLUTTER_CANVAS (priv->canvas), 300, 300);
         clutter_actor_set_content (CLUTTER_ACTOR (self), priv->canvas);
         clutter_actor_set_content_scaling_filters (CLUTTER_ACTOR (self), CLUTTER_SCALING_FILTER_TRILINEAR, CLUTTER_SCALING_FILTER_LINEAR);
         g_object_unref (priv->canvas);
@@ -231,37 +231,44 @@ static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int 
         /* the black rail that holds the seconds indicator */
         clutter_cairo_set_source_color (cr, priv->color);
         cairo_translate (cr, 0.5, 0.5);
-        cairo_arc (cr, 0, 0, 0.5, 0, G_PI * 2);
+        // Prwevent clipping
+        cairo_arc (cr, 0, 0, 0.49, 0, G_PI * 2);
         cairo_fill (cr);
 
         /* we're done drawing */
         return TRUE;
 }
 
-static guint idle_resize_id;
+// static guint idle_resize_id;
 
-static gboolean idle_resize (gpointer data)
-{
-        ClutterActor *actor = data;
-        float width, height;
+// static gboolean idle_resize (gpointer data)
+//{
+//        ClutterActor *actor = data;
+//        float width, height;
 
-        /* match the canvas size to the actor's */
-        clutter_actor_get_size (actor, &width, &height);
-        clutter_canvas_set_size (CLUTTER_CANVAS (clutter_actor_get_content (actor)), ceilf (width), ceilf (height));
+//        /* match the canvas size to the actor's */
+//        clutter_actor_get_size (actor, &width, &height);
+//        clutter_canvas_set_size (CLUTTER_CANVAS (clutter_actor_get_content (actor)), ceilf (width), ceilf (height));
 
-        /* unset the guard */
-        idle_resize_id = 0;
+//        /* unset the guard */
+//        idle_resize_id = 0;
 
-        /* remove the timeout */
-        return G_SOURCE_REMOVE;
-}
+//        /* remove the timeout */
+//        return G_SOURCE_REMOVE;
+//}
+
+// static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocation, ClutterAllocationFlags flags, gpointer user_data)
+//{
+//        /* throttle multiple actor allocations to one canvas resize; we use a guard
+//         * variable to avoid queueing multiple resize operations
+//         */
+//        if (idle_resize_id == 0) {
+//                idle_resize_id = clutter_threads_add_timeout (1000, idle_resize, actor);
+//        }
+//}
 
 static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocation, ClutterAllocationFlags flags, gpointer user_data)
 {
-        /* throttle multiple actor allocations to one canvas resize; we use a guard
-         * variable to avoid queueing multiple resize operations
-         */
-        if (idle_resize_id == 0) {
-                idle_resize_id = clutter_threads_add_timeout (1000, idle_resize, actor);
-        }
+        clutter_canvas_set_size (CLUTTER_CANVAS (clutter_actor_get_content (actor)), ceilf (clutter_actor_box_get_width (allocation)),
+                                 ceilf (clutter_actor_box_get_height (allocation)));
 }
