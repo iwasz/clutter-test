@@ -6,7 +6,7 @@
  *  ~~~~~~~~~                                                               *
  ****************************************************************************/
 
-#include "cb_button.h"
+#include "iw_circle.h"
 
 /**
  * SECTION:cb-button
@@ -18,10 +18,10 @@
 /* convenience macro for GType implementations; see:
  * http://library.gnome.org/devel/gobject/2.27/gobject-Type-Information.html#G-DEFINE-TYPE:CAPS
  */
-G_DEFINE_TYPE (CbButton, cb_button, CLUTTER_TYPE_ACTOR);
+G_DEFINE_TYPE (IwCircle, iw_circle, CLUTTER_TYPE_ACTOR);
 
 /* macro for accessing the object's private structure */
-#define CB_BUTTON_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), CB_TYPE_BUTTON, CbButtonPrivate))
+#define IW_CIRCLE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), IW_TYPE_CIRCLE, IwCirclePrivate))
 
 /* private structure - should only be accessed through the public API;
  * this is used to store member variables whose properties
@@ -34,7 +34,7 @@ G_DEFINE_TYPE (CbButton, cb_button, CLUTTER_TYPE_ACTOR);
  * for example, you might record the current state of the button
  * (toggled on or off) or a background image
  */
-struct _CbButtonPrivate {
+struct _IwCirclePrivate {
         ClutterActor *child;
         ClutterActor *label;
         ClutterAction *click_action;
@@ -54,7 +54,7 @@ enum { PROP_0, PROP_TEXT };
 enum { CLICKED, LAST_SIGNAL };
 
 /* cache array for signals */
-static guint cb_button_signals[LAST_SIGNAL] = {
+static guint iw_circle_signals[LAST_SIGNAL] = {
         0,
 };
 
@@ -67,27 +67,27 @@ static guint cb_button_signals[LAST_SIGNAL] = {
  * parent objects by calling their parent's respective methods *after* they
  * have disposed or finalized their own members."
  */
-static void cb_button_finalize (GObject *gobject)
+static void iw_circle_finalize (GObject *gobject)
 {
-        CbButtonPrivate *priv = CB_BUTTON (gobject)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
 
         g_free (priv->text);
 
         /* call the parent class' finalize() method */
-        G_OBJECT_CLASS (cb_button_parent_class)->finalize (gobject);
+        G_OBJECT_CLASS (iw_circle_parent_class)->finalize (gobject);
 }
 
 /* enables objects to be uniformly treated as GObjects;
  * also exposes properties so they become scriptable, e.g.
  * through ClutterScript
  */
-static void cb_button_set_property (GObject *gobject, guint prop_id, const GValue *value, GParamSpec *pspec)
+static void iw_circle_set_property (GObject *gobject, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-        CbButton *button = CB_BUTTON (gobject);
+        IwCircle *button = IW_CIRCLE (gobject);
 
         switch (prop_id) {
         case PROP_TEXT:
-                cb_button_set_text (button, g_value_get_string (value));
+                iw_circle_set_text (button, g_value_get_string (value));
                 break;
 
         default:
@@ -97,9 +97,9 @@ static void cb_button_set_property (GObject *gobject, guint prop_id, const GValu
 }
 
 /* enables objects to be uniformly treated as GObjects */
-static void cb_button_get_property (GObject *gobject, guint prop_id, GValue *value, GParamSpec *pspec)
+static void iw_circle_get_property (GObject *gobject, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-        CbButtonPrivate *priv = CB_BUTTON (gobject)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
 
         switch (prop_id) {
         case PROP_TEXT:
@@ -122,9 +122,9 @@ static void cb_button_get_property (GObject *gobject, guint prop_id, GValue *val
  * implementation destroy any actors they are composed from;
  * in this case, we just destroy the child ClutterBox
  */
-static void cb_button_destroy (ClutterActor *self)
+static void iw_circle_destroy (ClutterActor *self)
 {
-        CbButtonPrivate *priv = CB_BUTTON (self)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (self)->priv;
 
         /* we just destroy the child, and let the child
          * deal with destroying _its_ children; note that we have a guard
@@ -139,7 +139,7 @@ static void cb_button_destroy (ClutterActor *self)
          * note that we check the parent class has a destroy() implementation
          * before calling it
          */
-        if (CLUTTER_ACTOR_CLASS (cb_button_parent_class)->destroy) CLUTTER_ACTOR_CLASS (cb_button_parent_class)->destroy (self);
+        if (CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->destroy) CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->destroy (self);
 }
 
 /* get_preferred_height and get_preferred_width defer to the
@@ -148,13 +148,13 @@ static void cb_button_destroy (ClutterActor *self)
  * to be useful; natural_*_p is the height or width the actor
  * would occupy if not constrained
  *
- * note that if we required explicit sizing for CbButtons
+ * note that if we required explicit sizing for IwCircles
  * (i.e. a developer must set their height and width),
  * we wouldn't need to implement these functions
  */
-static void cb_button_get_preferred_height (ClutterActor *self, gfloat for_width, gfloat *min_height_p, gfloat *natural_height_p)
+static void iw_circle_get_preferred_height (ClutterActor *self, gfloat for_width, gfloat *min_height_p, gfloat *natural_height_p)
 {
-        CbButtonPrivate *priv = CB_BUTTON (self)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (self)->priv;
 
         clutter_actor_get_preferred_height (priv->child, for_width, min_height_p, natural_height_p);
 
@@ -162,9 +162,9 @@ static void cb_button_get_preferred_height (ClutterActor *self, gfloat for_width
         *natural_height_p += 20.0;
 }
 
-static void cb_button_get_preferred_width (ClutterActor *self, gfloat for_height, gfloat *min_width_p, gfloat *natural_width_p)
+static void iw_circle_get_preferred_width (ClutterActor *self, gfloat for_height, gfloat *min_width_p, gfloat *natural_width_p)
 {
-        CbButtonPrivate *priv = CB_BUTTON (self)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (self)->priv;
 
         clutter_actor_get_preferred_width (priv->child, for_height, min_width_p, natural_width_p);
 
@@ -173,15 +173,15 @@ static void cb_button_get_preferred_width (ClutterActor *self, gfloat for_height
 }
 
 /* use the actor's allocation for the ClutterBox */
-static void cb_button_allocate (ClutterActor *actor, const ClutterActorBox *box, ClutterAllocationFlags flags)
+static void iw_circle_allocate (ClutterActor *actor, const ClutterActorBox *box, ClutterAllocationFlags flags)
 {
-        CbButtonPrivate *priv = CB_BUTTON (actor)->priv;
+        IwCirclePrivate *priv = IW_CIRCLE (actor)->priv;
         ClutterActorBox child_box = {
                 0,
         };
 
         /* set the allocation for the whole button */
-        CLUTTER_ACTOR_CLASS (cb_button_parent_class)->allocate (actor, box, flags);
+        CLUTTER_ACTOR_CLASS (iw_circle_parent_class)->allocate (actor, box, flags);
 
         /* make the child (the ClutterBox) fill the parent;
          * note that this allocation box is relative to the
@@ -200,17 +200,48 @@ static void cb_button_allocate (ClutterActor *actor, const ClutterActorBox *box,
 }
 
 /* paint function implementation: just calls paint() on the ClutterBox */
-static void cb_button_paint (ClutterActor *actor)
+static void iw_circle_paint (ClutterActor *actor)
 {
-        CbButtonPrivate *priv = CB_BUTTON (actor)->priv;
-        clutter_actor_paint (priv->child);
+        IwCirclePrivate *priv = IW_CIRCLE (actor)->priv;
+
+        ClutterActorBox allocation = {
+                0,
+        };
+        gfloat width, height;
+        guint tmp_alpha;
+
+        /* priv is a private internal struct */
+        //        ClutterColor color = STAR_ACTOR (actor)->priv->color;
+
+        clutter_actor_get_allocation_box (actor, &allocation);
+        clutter_actor_box_get_size (&allocation, &width, &height);
+
+        //        tmp_alpha = clutter_actor_get_paint_opacity (actor) * color.alpha / 255;
+
+        cogl_path_new ();
+
+        //        cogl_set_source_color4ub (color.red, color.green, color.blue, tmp_alpha);
+        cogl_set_source_color4ub (0, 0, 255, 128);
+
+        /* create and store a path describing a star */
+        cogl_path_move_to (width * 0.5, 0);
+        cogl_path_line_to (width, height * 0.75);
+        cogl_path_line_to (0, height * 0.75);
+        cogl_path_move_to (width * 0.5, height);
+        cogl_path_line_to (0, height * 0.25);
+        cogl_path_line_to (width, height * 0.25);
+        cogl_path_line_to (width * 0.5, height);
+
+        cogl_path_fill ();
+
+        //        clutter_actor_paint (priv->child);
 }
 
 /* proxy ClickAction signals so they become signals from the actor */
-static void cb_button_clicked (ClutterClickAction *action, ClutterActor *actor, gpointer user_data)
+static void iw_circle_clicked (ClutterClickAction *action, ClutterActor *actor, gpointer user_data)
 {
         /* emit signal via the cache array */
-        g_signal_emit (actor, cb_button_signals[CLICKED], 0);
+        g_signal_emit (actor, iw_circle_signals[CLICKED], 0);
 }
 
 /* GObject class and instance initialization functions; note that
@@ -221,52 +252,52 @@ static void cb_button_clicked (ClutterClickAction *action, ClutterActor *actor, 
 /* class init: attach functions to superclasses, define properties
  * and signals
  */
-static void cb_button_class_init (CbButtonClass *klass)
+static void iw_circle_class_init (IwCircleClass *klass)
 {
         ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
         GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
         GParamSpec *pspec;
 
-        gobject_class->finalize = cb_button_finalize;
-        gobject_class->set_property = cb_button_set_property;
-        gobject_class->get_property = cb_button_get_property;
+        gobject_class->finalize = iw_circle_finalize;
+        gobject_class->set_property = iw_circle_set_property;
+        gobject_class->get_property = iw_circle_get_property;
 
-        actor_class->destroy = cb_button_destroy;
-        actor_class->get_preferred_height = cb_button_get_preferred_height;
-        actor_class->get_preferred_width = cb_button_get_preferred_width;
-        actor_class->allocate = cb_button_allocate;
-        actor_class->paint = cb_button_paint;
+        actor_class->destroy = iw_circle_destroy;
+        actor_class->get_preferred_height = iw_circle_get_preferred_height;
+        actor_class->get_preferred_width = iw_circle_get_preferred_width;
+        actor_class->allocate = iw_circle_allocate;
+        actor_class->paint = iw_circle_paint;
 
-        g_type_class_add_private (klass, sizeof (CbButtonPrivate));
+        g_type_class_add_private (klass, sizeof (IwCirclePrivate));
 
         /**
-         * CbButton:text:
+         * IwCircle:text:
          *
-         * The text shown on the #CbButton
+         * The text shown on the #IwCircle
          */
         pspec = g_param_spec_string ("text", "Text", "Text of the button", NULL, G_PARAM_READWRITE);
         g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
         /**
-         * CbButton::clicked:
-         * @button: the #CbButton that emitted the signal
+         * IwCircle::clicked:
+         * @button: the #IwCircle that emitted the signal
          *
          * The ::clicked signal is emitted when the internal #ClutterClickAction
-         * associated with a #CbButton emits its own ::clicked signal
+         * associated with a #IwCircle emits its own ::clicked signal
          */
-        cb_button_signals[CLICKED] = g_signal_new ("clicked", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (CbButtonClass, clicked), NULL,
+        iw_circle_signals[CLICKED] = g_signal_new ("clicked", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (IwCircleClass, clicked), NULL,
                                                    NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 /* object init: create a private structure and pack
  * composed ClutterActors into it
  */
-static void cb_button_init (CbButton *self)
+static void iw_circle_init (IwCircle *self)
 {
-        CbButtonPrivate *priv;
+        IwCirclePrivate *priv;
         ClutterLayoutManager *layout;
 
-        priv = self->priv = CB_BUTTON_GET_PRIVATE (self);
+        priv = self->priv = IW_CIRCLE_GET_PRIVATE (self);
 
         clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 
@@ -295,7 +326,7 @@ static void cb_button_init (CbButton *self)
         priv->click_action = clutter_click_action_new ();
         clutter_actor_add_action (CLUTTER_ACTOR (self), priv->click_action);
 
-        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (cb_button_clicked), NULL);
+        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circle_clicked), NULL);
 }
 
 /* public API */
@@ -304,21 +335,21 @@ static void cb_button_init (CbButton *self)
  */
 
 /**
- * cb_button_set_text:
- * @self: a #CbButton
+ * iw_circle_set_text:
+ * @self: a #IwCircle
  * @text: the text to display on the button
  *
  * Set the text on the button
  */
-void cb_button_set_text (CbButton *self, const gchar *text)
+void iw_circle_set_text (IwCircle *self, const gchar *text)
 {
-        CbButtonPrivate *priv;
+        IwCirclePrivate *priv;
 
         /* public API should check its arguments;
          * see also g_return_val_if_fail for functions which
          * return a value
          */
-        g_return_if_fail (CB_IS_BUTTON (self));
+        g_return_if_fail (IW_IS_CIRCLE (self));
 
         priv = self->priv;
 
@@ -334,53 +365,53 @@ void cb_button_set_text (CbButton *self, const gchar *text)
 }
 
 /**
- * cb_button_set_background_color:
- * @self: a #CbButton
+ * iw_circle_set_background_color:
+ * @self: a #IwCircle
  * @color: the #ClutterColor to use for the button's background
  *
  * Set the color of the button's background
  */
-void cb_button_set_background_color (CbButton *self, const ClutterColor *color)
+void iw_circle_set_background_color (IwCircle *self, const ClutterColor *color)
 {
-        g_return_if_fail (CB_IS_BUTTON (self));
+        g_return_if_fail (IW_IS_CIRCLE (self));
 
         clutter_actor_set_background_color (self->priv->child, color);
 }
 
 /**
- * cb_button_set_text_color:
- * @self: a #CbButton
+ * iw_circle_set_text_color:
+ * @self: a #IwCircle
  * @color: the #ClutterColor to use as the color for the button text
  *
  * Set the color of the text on the button
  */
-void cb_button_set_text_color (CbButton *self, const ClutterColor *color)
+void iw_circle_set_text_color (IwCircle *self, const ClutterColor *color)
 {
-        g_return_if_fail (CB_IS_BUTTON (self));
+        g_return_if_fail (IW_IS_CIRCLE (self));
 
         clutter_text_set_color (CLUTTER_TEXT (self->priv->label), color);
 }
 
 /**
- * cb_button_get_text:
- * @self: a #CbButton
+ * iw_circle_get_text:
+ * @self: a #IwCircle
  *
  * Get the text displayed on the button
  *
  * Returns: the button's text. This must not be freed by the application.
  */
-const gchar *cb_button_get_text (CbButton *self)
+const gchar *iw_circle_get_text (IwCircle *self)
 {
-        g_return_val_if_fail (CB_IS_BUTTON (self), NULL);
+        g_return_val_if_fail (IW_IS_CIRCLE (self), NULL);
 
         return self->priv->text;
 }
 
 /**
- * cb_button_new:
+ * iw_circle_new:
  *
- * Creates a new #CbButton instance
+ * Creates a new #IwCircle instance
  *
- * Returns: a new #CbButton
+ * Returns: a new #IwCircle
  */
-ClutterActor *cb_button_new (void) { return g_object_new (CB_TYPE_BUTTON, NULL); }
+ClutterActor *iw_circle_new (void) { return g_object_new (IW_TYPE_CIRCLE, NULL); }

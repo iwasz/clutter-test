@@ -9,6 +9,7 @@
 #include <clutter/clutter.h>
 #include <iostream>
 #include "cb_button.h"
+#include "iw_circle.h"
 
 /* colors */
 static const ClutterColor stage_color = { 0x33, 0x33, 0x55, 0xff };
@@ -53,7 +54,6 @@ int main (int argc, char **argv)
                 clutter_actor_add_action (rect, dragAction);
                 //        g_signal_connect (clickAction, "clicked", G_CALLBACK (clicked_cb), NULL);
 
-
                 //        g_signal_connect (stage, "button-press-event", G_CALLBACK (on_stage_button_press), NULL);
         }
 
@@ -76,18 +76,27 @@ int main (int argc, char **argv)
                 clutter_actor_add_action (rect, dragAction);
                 //        g_signal_connect (clickAction, "clicked", G_CALLBACK (clicked_cb), NULL);
 
-//                clutter_actor_show (rect);
+                //                clutter_actor_show (rect);
                 //        g_signal_connect (stage, "button-press-event", G_CALLBACK (on_stage_button_press), NULL);
         }
 
         /*---------------------------------------------------------------------------*/
 
-        ClutterActor *button = cb_button_new ();
-        cb_button_set_text (CB_BUTTON (button), "hello");
+//        ClutterActor *button = cb_button_new ();
+//        cb_button_set_text (CB_BUTTON (button), "hello");
+//        /* note that the size of the button is left to Clutter's size requisition */
+//        cb_button_set_text_color (CB_BUTTON (button), &white_color);
+//        cb_button_set_background_color (CB_BUTTON (button), &yellow_color);
+//        clutter_actor_add_child (stage, button);
+
+        /*---------------------------------------------------------------------------*/
+
+        ClutterActor *circle = iw_circle_new ();
+        iw_circle_set_text (IW_CIRCLE (circle), "hello");
         /* note that the size of the button is left to Clutter's size requisition */
-        cb_button_set_text_color (CB_BUTTON (button), &white_color);
-        cb_button_set_background_color (CB_BUTTON (button), &yellow_color);
-        clutter_actor_add_child (stage, button);
+        iw_circle_set_text_color (IW_CIRCLE (circle), &white_color);
+        iw_circle_set_background_color (IW_CIRCLE (circle), &yellow_color);
+        clutter_actor_add_child (stage, circle);
 
         /*---------------------------------------------------------------------------*/
 
@@ -123,36 +132,3 @@ void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_
         std::cerr << "Button " << clutter_click_action_get_button (action) << " clicked" << std::endl;
 }
 
-void on_paint (ClutterActor *actor, gpointer user_data)
-{
-        ClutterActorBox allocation = {
-                0,
-        };
-        gfloat width, height;
-        guint tmp_alpha;
-
-        /* priv is a private internal struct */
-        //        ClutterColor color = STAR_ACTOR (actor)->priv->color;
-
-        clutter_actor_get_allocation_box (actor, &allocation);
-        clutter_actor_box_get_size (&allocation, &width, &height);
-
-        //        tmp_alpha = clutter_actor_get_paint_opacity (actor) * color.alpha / 255;
-
-        cogl_path_new ();
-
-        //        cogl_set_source_color4ub (color.red, color.green, color.blue, tmp_alpha);
-        cogl_set_source_color4ub (0, 0, 255, 128);
-
-        /* create and store a path describing a star */
-        cogl_path_move_to (width * 0.5, 0);
-        cogl_path_line_to (width, height * 0.75);
-        cogl_path_line_to (0, height * 0.75);
-        cogl_path_move_to (width * 0.5, height);
-        cogl_path_line_to (0, height * 0.25);
-        cogl_path_line_to (width, height * 0.25);
-        cogl_path_line_to (width * 0.5, height);
-
-        cogl_path_fill ();
-        g_signal_stop_emission_by_name (actor, "paint");
-}

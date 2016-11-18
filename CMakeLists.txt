@@ -68,6 +68,8 @@ SET (SOURCES
         "src/main.cc"
         "src/cb_button.h"
         "src/cb_button.c"
+        "src/iw_circle.h"
+        "src/iw_circle.c"
 )
 
 # Local includes (inside project).
