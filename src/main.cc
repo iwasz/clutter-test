@@ -21,7 +21,7 @@ void on_stage_button_press (ClutterStage *stage, ClutterEvent *event, gpointer d
 void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_data);
 void on_paint (ClutterActor *actor, gpointer user_data);
 void iw_circle_destroy (ClutterActor *actor, gpointer user_data);
-static gboolean draw_clock (ClutterCanvas *canvas, cairo_t *cr, int width, int height);
+static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height);
 
 /*****************************************************************************/
 
@@ -78,7 +78,7 @@ int main (int argc, char **argv)
                 clutter_actor_add_child (CLUTTER_ACTOR (stage), rect);
                 g_object_unref (canvas);
                 /* connect our drawing code */
-                g_signal_connect (canvas, "draw", G_CALLBACK (draw_clock), NULL);
+                g_signal_connect (canvas, "draw", G_CALLBACK (draw_circle), NULL);
                 /* invalidate the canvas, so that we can draw before the main loop starts */
                 clutter_content_invalidate (canvas);
 
@@ -153,18 +153,8 @@ void clicked_cb (ClutterClickAction *action, ClutterActor *actor, gpointer user_
 
 void iw_circle_destroy (ClutterActor *actor, gpointer user_data) { std::cerr << "CircleDestroyed" << std::endl; }
 
-static gboolean draw_clock (ClutterCanvas *canvas, cairo_t *cr, int width, int height)
+static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height)
 {
-        GDateTime *now;
-        float hours, minutes, seconds;
-        ClutterColor color;
-
-        /* get the current time and compute the angles */
-        now = g_date_time_new_now_local ();
-        seconds = g_date_time_get_second (now) * G_PI / 30;
-        minutes = g_date_time_get_minute (now) * G_PI / 30;
-        hours = g_date_time_get_hour (now) * G_PI / 6;
-
         cairo_save (cr);
 
         /* clear the contents of the canvas, to avoid painting
@@ -188,29 +178,6 @@ static gboolean draw_clock (ClutterCanvas *canvas, cairo_t *cr, int width, int h
         cairo_translate (cr, 0.5, 0.5);
         cairo_arc (cr, 0, 0, 0.4, 0, G_PI * 2);
         cairo_stroke (cr);
-
-        /* the seconds indicator */
-        color = *CLUTTER_COLOR_White;
-        color.alpha = 128;
-        clutter_cairo_set_source_color (cr, &color);
-        cairo_move_to (cr, 0, 0);
-        cairo_arc (cr, sinf (seconds) * 0.4, -cosf (seconds) * 0.4, 0.05, 0, G_PI * 2);
-        cairo_fill (cr);
-
-        /* the minutes hand */
-        color = *CLUTTER_COLOR_DarkChameleon;
-        color.alpha = 196;
-        clutter_cairo_set_source_color (cr, &color);
-        cairo_move_to (cr, 0, 0);
-        cairo_line_to (cr, sinf (minutes) * 0.4, -cosf (minutes) * 0.4);
-        cairo_stroke (cr);
-
-        /* the hours hand */
-        cairo_move_to (cr, 0, 0);
-        cairo_line_to (cr, sinf (hours) * 0.2, -cosf (hours) * 0.2);
-        cairo_stroke (cr);
-
-        g_date_time_unref (now);
 
         /* we're done drawing */
         return TRUE;
