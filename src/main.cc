@@ -11,6 +11,7 @@
 #include <cmath>
 #include "cb_button.h"
 #include "iw_circle.h"
+#include "iw_line.h"
 
 /* colors */
 static const ClutterColor stage_color = { 0x33, 0x33, 0x55, 0xff };
@@ -97,6 +98,7 @@ int main (int argc, char **argv)
                 /* note that the size of the button is left to Clutter's size requisition */
                 //        clutter_actor_set_background_color (circle, &yellow_color);
                 clutter_actor_set_size (circle, 100, 100);
+                clutter_actor_set_position (circle, 100, 300);
                 ClutterColor actor_color = { 0, 150, 198, 201 };
                 iw_circle_set_color (IW_CIRCLE (circle), &actor_color);
                 //        g_signal_connect (circle, "destroy", G_CALLBACK (iw_circle_destroy), NULL);
@@ -106,6 +108,19 @@ int main (int argc, char **argv)
 
                 ClutterAction *dragAction = clutter_drag_action_new ();
                 clutter_actor_add_action (circle, dragAction);
+        }
+        /*---------------------------------------------------------------------------*/
+        {
+                ClutterActor *line = iw_line_new ();
+                clutter_actor_set_size (line, 100, 100);
+                clutter_actor_set_position (line, 300, 100);
+                ClutterColor actor_color = { 0, 150, 198, 201 };
+                iw_line_set_color (IW_LINE (line), &actor_color);
+                clutter_actor_set_reactive (line, TRUE);
+                clutter_actor_add_child (stage, line);
+
+                ClutterAction *dragAction = clutter_drag_action_new ();
+                clutter_actor_add_action (line, dragAction);
         }
         /*---------------------------------------------------------------------------*/
 

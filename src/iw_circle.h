@@ -64,9 +64,6 @@ struct _IwCircle {
 
 /* class structure */
 struct _IwCircleClass {
-        /* signals */
-        void (*clicked) (IwCircle *circle);
-
         /*<private>*/
         ClutterActorClass parent_class;
 };

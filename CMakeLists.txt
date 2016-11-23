@@ -70,6 +70,8 @@ SET (SOURCES
         "src/cb_button.c"
         "src/iw_circle.h"
         "src/iw_circle.c"
+        "src/iw_line.h"
+        "src/iw_line.c"
 )
 
 # Local includes (inside project).
