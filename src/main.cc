@@ -7,6 +7,7 @@
  ****************************************************************************/
 
 #include <clutter/clutter.h>
+#include <clutter-gtk/clutter-gtk.h>
 #include <iostream>
 #include <cmath>
 #include "cb_button.h"
@@ -25,19 +26,30 @@ void on_paint (ClutterActor *actor, gpointer user_data);
 void iw_circle_destroy (ClutterActor *actor, gpointer user_data);
 
 /*****************************************************************************/
-
-int main (int argc, char **argv)
+static gboolean go (gpointer user_data)
 {
-        if (clutter_init (&argc, &argv) < 1) {
-                std::cerr << "clutter_init failed" << std::endl;
-        }
+        GtkWidget *window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+        gtk_window_maximize (GTK_WINDOW (window));
+        g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+
+        GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+        gtk_container_add (GTK_CONTAINER (window), vbox);
+
+        GtkWidget *button = gtk_button_new_with_label("test");
+        gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 0);
+
+        GtkWidget *clutter = gtk_clutter_embed_new ();
+        gtk_widget_set_size_request (clutter, 512, 512);
+        gtk_box_pack_start (GTK_BOX (vbox), clutter, TRUE, TRUE, 0);
+
+        //        ClutterActor *stage = clutter_stage_new ();
+        ClutterActor *stage = gtk_clutter_embed_get_stage (GTK_CLUTTER_EMBED (clutter));
 
         ClutterColor stage_color = { 236, 236, 236, 255 };
-
-        ClutterActor *stage = clutter_stage_new ();
-        clutter_actor_set_size (stage, 512, 512);
+        // clutter_actor_set_size (stage, 512, 512);
         clutter_actor_set_background_color (CLUTTER_ACTOR (stage), &stage_color);
-        g_signal_connect (stage, "destroy", G_CALLBACK (clutter_main_quit), NULL);
+        //        g_signal_connect (stage, "destroy", G_CALLBACK (clutter_main_quit), NULL);
+        gtk_widget_show_all (window);
 
         /*---------------------------------------------------------------------------*/
 
@@ -154,8 +166,23 @@ int main (int argc, char **argv)
         }
         /*---------------------------------------------------------------------------*/
         clutter_actor_show (stage);
+        return false;
+}
 
-        clutter_main ();
+int main (int argc, char **argv)
+{
+        //        if (clutter_init (&argc, &argv) < 1) {
+        //                std::cerr << "clutter_init failed" << std::endl;
+        //        }
+
+        if (gtk_clutter_init_with_args (&argc, &argv, NULL, NULL, NULL, NULL) != CLUTTER_INIT_SUCCESS) {
+                g_error ("Unable to initialize GtkClutter");
+        }
+
+        g_timeout_add_seconds (3, go, NULL);
+
+        //        clutter_main ();
+        gtk_main ();
 }
 
 /*****************************************************************************/
