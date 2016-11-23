@@ -7,40 +7,42 @@
  ****************************************************************************/
 
 #include <math.h>
-#include "iw_circle.h"
-
-/**
- * SECTION:cb-button
- * @short_description: Button widget
- *
- * A button widget with support for a text label and background color.
- */
+#include "iw_circular_node.h"
 
 /* convenience macro for GType implementations; see:
  * http://library.gnome.org/devel/gobject/2.27/gobject-Type-Information.html#G-DEFINE-TYPE:CAPS
  */
-G_DEFINE_TYPE (IwCircle, iw_circle, CLUTTER_TYPE_ACTOR);
+G_DEFINE_TYPE (IwCircularNode, iw_circular_node, CLUTTER_TYPE_ACTOR);
 
 /* macro for accessing the object's private structure */
-#define IW_CIRCLE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), IW_TYPE_CIRCLE, IwCirclePrivate))
+#define IW_CIRCULAR_NODE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), IW_TYPE_CIRCULAR_NODE, IwCircularNodePrivate))
 
-/* private structure - should only be accessed through the public API;
- * this is used to store member variables whose properties
- * need to be accessible from the implementation; for example, if we
- * intend to create wrapper functions which modify properties on the
- * actors composing an object, we should keep a reference to the actors
- * here
- *
- * this is also the place where other state variables go:
- * for example, you might record the current state of the button
- * (toggled on or off) or a background image
+/**
+ * One input.
  */
-struct _IwCirclePrivate {
+struct _IwCircularNodePort {
+        float angle;
+        float size;
         ClutterColor color;
-        ClutterContent *canvas;
 };
 
-static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height, gpointer *data);
+typedef struct _IwCircularNodePort IwCircularNodePort;
+
+#define MAX_PORTS_NO 16
+
+/*
+ * Private structures.
+ */
+struct _IwCircularNodePrivate {
+        ClutterColor color;
+        ClutterContent *canvas;
+        float radius;
+
+        int portsNo;
+        IwCircularNodePort ports[MAX_PORTS_NO];
+};
+
+static gboolean do_draw (ClutterCanvas *canvas, cairo_t *cr, int width, int height, gpointer *data);
 static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocation, ClutterAllocationFlags flags, gpointer user_data);
 static gboolean idle_resize (gpointer data);
 
@@ -53,14 +55,13 @@ static gboolean idle_resize (gpointer data);
  * parent objects by calling their parent's respective methods *after* they
  * have disposed or finalized their own members."
  */
-static void iw_circle_finalize (GObject *gobject)
+static void iw_circular_node_finalize (GObject *gobject)
 {
-        //        IwCirclePrivate *priv = IW_CIRCLE (gobject)->priv;
-
+        //        IwCircularNodePrivate *priv = IW_CIRCULAR_NODE (gobject)->priv;
         //        clutter_color_free (priv->color);
 
         /* call the parent class' finalize() method */
-        G_OBJECT_CLASS (iw_circle_parent_class)->finalize (gobject);
+        G_OBJECT_CLASS (iw_circular_node_parent_class)->finalize (gobject);
 }
 
 static void star_actor_pick (ClutterActor *actor, const ClutterColor *pick_color)
@@ -99,34 +100,35 @@ static void star_actor_pick (ClutterActor *actor, const ClutterColor *pick_color
 /* class init: attach functions to superclasses, define properties
  * and signals
  */
-static void iw_circle_class_init (IwCircleClass *klass)
+static void iw_circular_node_class_init (IwCircularNodeClass *klass)
 {
         ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
         GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
         GParamSpec *pspec;
 
-        gobject_class->finalize = iw_circle_finalize;
-        //        gobject_class->set_property = iw_circle_set_property;
-        //        gobject_class->get_property = iw_circle_get_property;
+        gobject_class->finalize = iw_circular_node_finalize;
+        //        gobject_class->set_property = iw_circular_node_set_property;
+        //        gobject_class->get_property = iw_circular_node_get_property;
 
         // It still got destroyed even when I do not override the destroy method (like virtual function in C++).
-        //        actor_class->allocate = iw_circle_allocate;
-        //        actor_class->paint = iw_circle_paint;
-        //        actor_class->paint_node = iw_circle_paint_node;
+        //        actor_class->allocate = iw_circular_node_allocate;
+        //        actor_class->paint = iw_circular_node_paint;
+        //        actor_class->paint_node = iw_circular_node_paint_node;
         actor_class->pick = star_actor_pick;
 
-        g_type_class_add_private (klass, sizeof (IwCirclePrivate));
+        g_type_class_add_private (klass, sizeof (IwCircularNodePrivate));
 }
 
 /* object init: create a private structure and pack
  * composed ClutterActors into it
  */
-static void iw_circle_init (IwCircle *self)
+static void iw_circular_node_init (IwCircularNode *self)
 {
-        IwCirclePrivate *priv;
+        IwCircularNodePrivate *priv;
         ClutterLayoutManager *layout;
 
-        priv = self->priv = IW_CIRCLE_GET_PRIVATE (self);
+        priv = self->priv = IW_CIRCULAR_NODE_GET_PRIVATE (self);
+        priv->portsNo = 0;
 
         //        clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 
@@ -155,9 +157,8 @@ static void iw_circle_init (IwCircle *self)
         //        priv->click_action = clutter_click_action_new ();
         //        clutter_actor_add_action (CLUTTER_ACTOR (self), priv->click_action);
 
-        //        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circle_clicked), NULL);
+        //        g_signal_connect (priv->click_action, "clicked", G_CALLBACK (iw_circular_node_clicked), NULL);
         priv->color = *clutter_color_get_static (CLUTTER_COLOR_WHITE);
-
         priv->canvas = clutter_canvas_new ();
         //        clutter_canvas_set_size (CLUTTER_CANVAS (priv->canvas), 300, 300);
         clutter_actor_set_content (CLUTTER_ACTOR (self), priv->canvas);
@@ -165,44 +166,18 @@ static void iw_circle_init (IwCircle *self)
         g_object_unref (priv->canvas);
 
         /* connect our drawing code */
-        g_signal_connect (priv->canvas, "draw", G_CALLBACK (draw_circle), priv);
+        g_signal_connect (priv->canvas, "draw", G_CALLBACK (do_draw), priv);
         /* invalidate the canvas, so that we can draw before the main loop starts */
         clutter_content_invalidate (priv->canvas);
 
         g_signal_connect (CLUTTER_ACTOR (self), "allocation-changed", G_CALLBACK (on_actor_resize), NULL);
 }
 
-/* public API */
-/* examples of public API functions which wrap functions
- * on internal actors
- */
+/*****************************************************************************/
 
-/**
- * iw_circle_set_background_color:
- * @self: a #IwCircle
- * @color: the #ClutterColor to use for the button's background
- *
- * Set the color of the button's background
- */
-void iw_circle_set_color (IwCircle *self, const ClutterColor *color)
+static gboolean do_draw (ClutterCanvas *canvas, cairo_t *cr, int width, int height, gpointer *data)
 {
-        g_return_if_fail (IW_IS_CIRCLE (self));
-        self->priv->color = *color;
-        clutter_content_invalidate (self->priv->canvas);
-}
-
-/**
- * iw_circle_new:
- *
- * Creates a new #IwCircle instance
- *
- * Returns: a new #IwCircle
- */
-ClutterActor *iw_circle_new (void) { return g_object_new (IW_TYPE_CIRCLE, NULL); }
-
-static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int height, gpointer *data)
-{
-        IwCirclePrivate *priv = (IwCirclePrivate *)data;
+        IwCircularNodePrivate *priv = (IwCircularNodePrivate *)data;
 
         cairo_save (cr);
 
@@ -211,23 +186,27 @@ static gboolean draw_circle (ClutterCanvas *canvas, cairo_t *cr, int width, int 
          */
         cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
         cairo_paint (cr);
-
         cairo_restore (cr);
-
         cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
-
-        /* scale the modelview to the size of the surface */
-        cairo_scale (cr, width, height);
 
         cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
         cairo_set_line_width (cr, 0);
 
+#define PORT_LINE_WIDTH 5
+
         /* the black rail that holds the seconds indicator */
         clutter_cairo_set_source_color (cr, &priv->color);
-        cairo_translate (cr, 0.5, 0.5);
-        // Prwevent clipping
-        cairo_arc (cr, 0, 0, 0.49, 0, G_PI * 2);
+        cairo_translate (cr, priv->radius, priv->radius);
+        cairo_arc (cr, 0, 0, priv->radius - PORT_LINE_WIDTH - PORT_LINE_WIDTH / 2 - 1, 0, G_PI * 2);
         cairo_fill (cr);
+
+        cairo_set_line_width (cr, PORT_LINE_WIDTH);
+        for (int i = 0; i < priv->portsNo; ++i) {
+                clutter_cairo_set_source_color (cr, &priv->ports[i].color);
+                cairo_arc (cr, 0, 0, priv->radius - PORT_LINE_WIDTH / 2 - 1, priv->ports[i].angle - priv->ports[i].size / 2,
+                           priv->ports[i].angle + priv->ports[i].size / 2);
+                cairo_stroke (cr);
+        }
 
         /* we're done drawing */
         return TRUE;
@@ -265,4 +244,69 @@ static void on_actor_resize (ClutterActor *actor, const ClutterActorBox *allocat
 {
         clutter_canvas_set_size (CLUTTER_CANVAS (clutter_actor_get_content (actor)), ceilf (clutter_actor_box_get_width (allocation)),
                                  ceilf (clutter_actor_box_get_height (allocation)));
+}
+
+/* public API */
+/* examples of public API functions which wrap functions
+ * on internal actors
+ */
+
+/*****************************************************************************/
+
+void iw_circular_node_set_color (IwCircularNode *self, const ClutterColor *color)
+{
+        g_return_if_fail (IW_IS_CIRCULAR_NODE (self));
+        self->priv->color = *color;
+        clutter_content_invalidate (self->priv->canvas);
+}
+
+/*****************************************************************************/
+
+void iw_circular_node_set_ports_no (IwCircularNode *self, int i)
+{
+        g_return_if_fail (IW_IS_CIRCULAR_NODE (self));
+        self->priv->portsNo = i;
+}
+
+/*****************************************************************************/
+
+void iw_circular_node_set_port_color (IwCircularNode *self, int i, const ClutterColor *color)
+{
+        g_return_if_fail (IW_IS_CIRCULAR_NODE (self));
+        self->priv->ports[i].color = *color;
+        clutter_content_invalidate (self->priv->canvas);
+}
+
+/*****************************************************************************/
+
+void iw_circular_node_set_port_angle (IwCircularNode *self, int i, float angle)
+{
+        g_return_if_fail (IW_IS_CIRCULAR_NODE (self));
+        self->priv->ports[i].angle = angle;
+        clutter_content_invalidate (self->priv->canvas);
+}
+
+/*****************************************************************************/
+
+void iw_circular_node_set_port_size (IwCircularNode *self, int i, float s)
+{
+        g_return_if_fail (IW_IS_CIRCULAR_NODE (self));
+        g_return_if_fail (i >= 0);
+        g_return_if_fail (i < self->priv->portsNo);
+        self->priv->ports[i].size = s;
+        clutter_content_invalidate (self->priv->canvas);
+}
+
+/*****************************************************************************/
+
+ClutterActor *iw_circular_node_new (void) { return g_object_new (IW_TYPE_CIRCULAR_NODE, NULL); }
+
+/*****************************************************************************/
+
+void iw_circular_node_set_radius (IwCircularNode *self, float r)
+{
+        g_return_if_fail (IW_IS_CIRCULAR_NODE (self));
+        self->priv->radius = r;
+        clutter_actor_set_size (CLUTTER_ACTOR (self), r * 2, r * 2);
+        clutter_content_invalidate (self->priv->canvas);
 }

@@ -72,6 +72,8 @@ SET (SOURCES
         "src/iw_circle.c"
         "src/iw_line.h"
         "src/iw_line.c"
+        "src/iw_circular_node.h"
+        "src/iw_circular_node.c"
 )
 
 # Local includes (inside project).

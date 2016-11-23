@@ -12,6 +12,7 @@
 #include "cb_button.h"
 #include "iw_circle.h"
 #include "iw_line.h"
+#include "iw_circular_node.h"
 
 /* colors */
 static const ClutterColor stage_color = { 0x33, 0x33, 0x55, 0xff };
@@ -98,7 +99,7 @@ int main (int argc, char **argv)
                 /* note that the size of the button is left to Clutter's size requisition */
                 //        clutter_actor_set_background_color (circle, &yellow_color);
                 clutter_actor_set_size (circle, 100, 100);
-                clutter_actor_set_position (circle, 100, 300);
+                clutter_actor_set_position (circle, 200, 400);
                 ClutterColor actor_color = { 0, 150, 198, 201 };
                 iw_circle_set_color (IW_CIRCLE (circle), &actor_color);
                 //        g_signal_connect (circle, "destroy", G_CALLBACK (iw_circle_destroy), NULL);
@@ -123,7 +124,35 @@ int main (int argc, char **argv)
                 clutter_actor_add_action (line, dragAction);
         }
         /*---------------------------------------------------------------------------*/
+        {
+                ClutterActor *circularNode = iw_circular_node_new ();
+                clutter_actor_set_position (circularNode, 100, 300);
+                iw_circular_node_set_radius (IW_CIRCULAR_NODE (circularNode), 75);
+                ClutterColor actor_color = { 0, 150, 198, 201 };
+                iw_circular_node_set_color (IW_CIRCULAR_NODE (circularNode), &actor_color);
+                clutter_actor_set_reactive (circularNode, TRUE);
 
+                iw_circular_node_set_ports_no (IW_CIRCULAR_NODE (circularNode), 3);
+                iw_circular_node_set_port_angle (IW_CIRCULAR_NODE (circularNode), 0, G_PI - 0.5);
+                iw_circular_node_set_port_size (IW_CIRCULAR_NODE (circularNode), 0, 0.4);
+                ClutterColor port_color = { 141, 141, 141, 255 };
+                iw_circular_node_set_port_color (IW_CIRCULAR_NODE (circularNode), 0, &port_color);
+
+                iw_circular_node_set_port_angle (IW_CIRCULAR_NODE (circularNode), 1, G_PI + 0.5);
+                iw_circular_node_set_port_size (IW_CIRCULAR_NODE (circularNode), 1, 0.4);
+                iw_circular_node_set_port_color (IW_CIRCULAR_NODE (circularNode), 1, &port_color);
+
+                iw_circular_node_set_port_angle (IW_CIRCULAR_NODE (circularNode), 2, 2 * G_PI);
+                iw_circular_node_set_port_size (IW_CIRCULAR_NODE (circularNode), 2, 0.4);
+                ClutterColor port_color2 = { 209, 209, 209, 255 };
+                iw_circular_node_set_port_color (IW_CIRCULAR_NODE (circularNode), 2, &port_color2);
+
+                clutter_actor_add_child (stage, circularNode);
+
+                ClutterAction *dragAction = clutter_drag_action_new ();
+                clutter_actor_add_action (circularNode, dragAction);
+        }
+        /*---------------------------------------------------------------------------*/
         clutter_actor_show (stage);
 
         clutter_main ();
