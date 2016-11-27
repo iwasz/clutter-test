@@ -26,8 +26,16 @@ void on_paint (ClutterActor *actor, gpointer user_data);
 void iw_circle_destroy (ClutterActor *actor, gpointer user_data);
 
 /*****************************************************************************/
-static gboolean go (gpointer user_data)
+int main (int argc, char **argv)
 {
+        //        if (clutter_init (&argc, &argv) < 1) {
+        //                std::cerr << "clutter_init failed" << std::endl;
+        //        }
+
+        if (gtk_clutter_init_with_args (&argc, &argv, NULL, NULL, NULL, NULL) != CLUTTER_INIT_SUCCESS) {
+                g_error ("Unable to initialize GtkClutter");
+        }
+
         GtkWidget *window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
         gtk_window_maximize (GTK_WINDOW (window));
         g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
@@ -166,22 +174,7 @@ static gboolean go (gpointer user_data)
         }
         /*---------------------------------------------------------------------------*/
         clutter_actor_show (stage);
-        return false;
-}
 
-int main (int argc, char **argv)
-{
-        //        if (clutter_init (&argc, &argv) < 1) {
-        //                std::cerr << "clutter_init failed" << std::endl;
-        //        }
-
-        if (gtk_clutter_init_with_args (&argc, &argv, NULL, NULL, NULL, NULL) != CLUTTER_INIT_SUCCESS) {
-                g_error ("Unable to initialize GtkClutter");
-        }
-
-        g_timeout_add_seconds (3, go, NULL);
-
-        //        clutter_main ();
         gtk_main ();
 }
 
